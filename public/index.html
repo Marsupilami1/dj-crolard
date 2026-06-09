@@ -3,39 +3,88 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>DJ Crolard</title>
-		<link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" href="style.css" />
 		<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-	</head>
-	<body>
-		<div class="container">
-			<h2>DJ Crolard</h2>
-
-			<div class="input-group">
-				<input
-					type="text"
-					id="url-input"
-					placeholder="YouTube Link (watch?v=...)"
-				/>
-				<button class="btn-action" onclick="sendUrl()">Add</button>
-			</div>
-
-			<button id="btn-sync" onclick="forceSync()">🔊 SYNCRHONIZE</button>
-
-			<div id="player-wrapper">
-				<div id="player"></div>
-			</div>
-
-			<button class="btn-action" onclick="askClearQueue()">Clear</button>
-			<button class="btn-action" onclick="askNextVideo()">Next</button>
-
-			<div class="queue-section">
-				<strong>Queue:</strong>
-				<ul id="playlist-view"></ul>
-			</div>
-		</div>
-
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="https://www.youtube.com/iframe_api"></script>
 		<script src="client.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+		/>
+	</head>
+	<body
+		class="bg-mist-800 text-zinc-200 font-display w-full flex flex-col items-center mt-20"
+	>
+		<div class="flex gap-6">
+			<div class="flex flex-col w-5xl gap-2">
+				<div class="flex flex-col gap-4 items-center">
+					<div class="flex w-full justify-between items-center">
+						<div>
+							<h2 class="text-6xl font-bold">DJ Crolard</h2>
+							<h3 class="text-3xl">A Collaborative Jukebox Experience</h3>
+						</div>
+
+						<button
+							id="btn-sync"
+							onclick="forceSync()"
+							class="w-sm h-full p-2 text-white bg-green-700 ease-in-out duration-600 rounded-sm text-2xl hover:cursor-pointer group"
+						>
+							Join Jukebox
+							<div class="group-hover:animate-spin ease-in-out duration-600">
+								<i class="bi bi-arrow-clockwise text-4xl"></i>
+							</div>
+						</button>
+					</div>
+
+					<div class="flex gap-2 w-full">
+						<input
+							type="text"
+							id="url-input"
+							placeholder="Add your song here ! (youtube link)"
+							class="bg-mist-900"
+						/>
+						<button
+							onclick="sendUrl()"
+							class="p-2 text-white bg-red-700 hover:bg-green-700 ease-in-out duration-600 rounded-sm hover:cursor-pointer text-xl group"
+						>
+							<div
+								class="group-hover:-rotate-180 group-hover:scale-120 ease-in-out duration-600"
+							>
+								<i class="bi bi-plus text-4xl"></i>
+							</div>
+						</button>
+					</div>
+
+					<div id="player-wrapper" class="border-zinc-500 border-2">
+						<div id="player"></div>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="flex flex-col w-lg items-center p-4 bg-mist-900 rounded-sm border-zinc-500 border-2"
+			>
+				<div class="flex gap-12">
+					<button
+						onclick="askClearQueue()"
+						class="p-2 w-[120px] text-white bg-red-900 hover:bg-red-700 ease-in-out duration-600 rounded-sm hover:cursor-pointer text-xl group"
+					>
+						Clear
+					</button>
+					<button
+						onclick="askNextVideo()"
+						class="p-2 w-[120px] text-white bg-blue-900 hover:bg-blue-700 ease-in-out duration-600 rounded-sm hover:cursor-pointer text-xl group"
+					>
+						<i class="bi bi-fast-forward-fill text-2xl"></i>
+					</button>
+				</div>
+
+				<div class="w-full">
+					<strong>Queue:</strong>
+					<ul id="playlist-view"></ul>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
