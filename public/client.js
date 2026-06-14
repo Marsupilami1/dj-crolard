@@ -1,4 +1,4 @@
-const socket = io();
+let ws = new WebSocket("/ws");
 let player;
 let currentVideoId = null;
 let currentVideoStartTime = null;
@@ -35,38 +35,46 @@ function sendUrl() {
 	const input = document.getElementById("url-input");
 	const id = extractId(input.value);
 	if (id) {
-		socket.emit("add_to_queue", id);
-		input.value = "";
+		req = { message: "add_video", payload: id };
+		ws.send(JSON.stringify(req));
 	}
 }
 
 // WebSocket Events
-socket.on("sync", (data) => {
-	currentVideoId = data.videoId;
-	currentVideoStartTime = data.startTime;
-	if (player && player.loadVideoById) forceSync();
-});
-
-socket.on("update_queue", (queue) => {
-	localQueue = queue;
-	const view = document.getElementById("playlist-view");
-	if (queue.length == 0) {
-		view.innerHTML = "<li>Queue is empty :/</li>";
-	} else {
-		view.innerHTML = queue
-			.map(
-				(item, i) =>
-					`<li data-index="${i}">
-             <div class="item-content">
-               <span class="index">${i + 1}</span> ${item.title}
-             </div>
-             <button class="delete-btn" onclick="askDelete('${item.id}', ${i})"><i class="bi bi-trash text-xl"></i></button>
-           </li>`,
-			)
-			.join("");
-		initSortable();
+ws.onmessage = (event) => {
+	console.log("Message received from server");
+	data = JSON.parse(event.data);
+	payload = data.payload;
+	if (data.message == "sync") {
+		console.log("Synchronizing");
+		currentVideoId = payload.videoId;
+		currentVideoStartTime = payload.startTime;
+		console.log(currentVideoId, currentVideoStartTime, Date.now());
+		forceSync();
+		return;
 	}
-});
+	if (data.message == "queue") {
+		console.log("Updating queue");
+		localQueue = payload;
+		const view = document.getElementById("playlist-view");
+		if (payload.length == 0) {
+			view.innerHTML = "<li>Queue is empty :/</li>";
+		} else {
+			view.innerHTML = payload
+				.map(
+					(item, i) =>
+						`<li data-index="${i}">
+            <div class="item-content">
+              <span class="index">${i + 1}</span> ${item.title}
+            </div>
+            <button class="delete-btn" onclick="askDelete(${i})"><i class="bi bi-trash text-xl"></i></button>
+          </li>`,
+				)
+				.join("");
+			initSortable();
+		}
+	}
+};
 
 function initSortable() {
 	const el = document.getElementById("playlist-view");
@@ -85,11 +93,6 @@ function initSortable() {
 	});
 }
 
-socket.on("stop_video", () => {
-	if (player) player.stopVideo();
-});
-
-// La fonction clé : calcule le temps réel par rapport au serveur
 function forceSync() {
 	if (player && currentVideoId && currentVideoStartTime) {
 		const elapsed = (Date.now() - currentVideoStartTime) / 1000;
@@ -102,13 +105,16 @@ function forceSync() {
 }
 
 function askNextVideo() {
-	socket.emit("next");
+	req = { message: "next", payload: null };
+	ws.send(JSON.stringify(req));
 }
 
 function askClearQueue() {
-	socket.emit("clear");
+	req = { message: "clear", payload: null };
+	ws.send(JSON.stringify(req));
 }
 
-function askDelete(videoId, index) {
-	socket.emit("delete", videoId, index);
+function askDelete(index) {
+	req = { message: "delete", payload: index };
+	ws.send(JSON.stringify(req));
 }
