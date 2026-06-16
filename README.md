@@ -12,6 +12,30 @@ Uses YouTube API for video metadata (API key required).
   - [cpr](https://github.com/libcpr/cpr) - C++ Requests library
   - [asio](https://github.com/chriskohlhoff/asio) - Asynchronous I/O
 
+### Ubuntu/Debian
+
+```bash
+sudo apt update
+sudo apt install build-essential clang libcurl4-openssl-dev libasio-dev libcpr-dev
+```
+
+### Fedora
+
+```bash
+sudo dnf install gcc-c++ clang libcurl-devel asio-devel cpr-devel
+```
+
+### Arch Linux
+
+```bash
+sudo pacman -S base-devel clang curl asio
+
+# cpr is available in the AUR (use your preferred AUR helper)
+yay -S cpr
+# or
+paru -S cpr
+```
+
 ## YouTube API Key Setup
 
 ### Option 1: Environment Variable
