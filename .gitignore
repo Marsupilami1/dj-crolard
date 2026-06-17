@@ -1,2 +1,10 @@
 /node_modules/
 /package-lock.json
+
+# API keys (should never be committed)
+server/api-key.txt
+*.key
+
+# Server binaries
+server/*.pch
+server/main

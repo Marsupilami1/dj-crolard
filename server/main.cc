@@ -2,6 +2,8 @@
 #include <asio/steady_timer.hpp>
 #include <chrono>
 #include <cpr/cpr.h>
+#include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <mutex>
 #include <regex>
@@ -86,7 +88,21 @@ void NextVideo(State &state) {
 }
 
 std::string LoadApiKey() {
-    std::ifstream file("/home/martin/api-keys/yt-dj-crolard");
+    const char* env_key = std::getenv("YT_API_KEY");
+    if (env_key != nullptr && std::strlen(env_key) > 0) {
+        return std::string(env_key);
+    }
+    
+    const char* env_path = std::getenv("YT_API_KEY_FILE");
+    std::string key_file = env_path != nullptr ? std::string(env_path) : "api-key.txt";
+    
+    std::ifstream file(key_file);
+    if (!file.is_open()) {
+        CROW_LOG_ERROR << "Failed to open API key file: " << key_file;
+        CROW_LOG_ERROR << "Set YT_API_KEY environment variable or YT_API_KEY_FILE to specify a file path";
+        return "";
+    }
+    
     std::string key;
     std::getline(file, key);
     return key;
