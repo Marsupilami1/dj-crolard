@@ -63,10 +63,8 @@ export YT_API_KEY_FILE="/path/to/your/api-key-file"
 From the **root** directory:
 
 ```bash
-cd server        # Go to server directory
-make all         # Build
-cd ..            # Go back to the root directory
-./server/main    # Run
+make -C server all # Build
+./server/main      # Run
 ```
 
 The server will start on port 8000. Open `http://localhost:8000` in your browser.
