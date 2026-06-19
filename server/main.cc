@@ -149,6 +149,9 @@ int main(int argc, char *argv[]) {
     State state(ioc);
 
     std::string yt_api_key = LoadApiKey();
+    if (yt_api_key.empty()) {
+        return 1;
+    }
 
     crow::SimpleApp app;
 
