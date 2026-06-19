@@ -63,6 +63,7 @@ export YT_API_KEY_FILE="/path/to/your/api-key-file"
 From the **root** directory:
 
 ```bash
+npx @tailwindcss/cli -i public/style_config.css -o public/style.css # Generate the style.css file
 make -C server all # Build
 ./server/main      # Run
 ```
