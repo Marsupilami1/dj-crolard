@@ -188,6 +188,12 @@ int main(int argc, char *argv[]) {
         res.end();
     });
 
+    CROW_ROUTE(app,
+               "/favicon.ico")([](const crow::request &, crow::response &res) {
+        res.set_static_file_info("public/favicon.ico");
+        res.end();
+    });
+
     CROW_WEBSOCKET_ROUTE(app, "/ws")
         .onopen([&](crow::websocket::connection &conn) {
             CROW_LOG_INFO << "Websocket open (" << conn.get_remote_ip() << ")";
