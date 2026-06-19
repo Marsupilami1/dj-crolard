@@ -8,3 +8,4 @@ server/api-key.txt
 # Server binaries
 server/*.pch
 server/main
+/public/style.css
