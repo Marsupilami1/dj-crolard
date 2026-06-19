@@ -9,3 +9,5 @@ server/api-key.txt
 server/*.pch
 server/main
 /public/style.css
+/server/*.o
+/.clangd

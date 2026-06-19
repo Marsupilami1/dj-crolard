@@ -13,9 +13,13 @@ all: main
 $(PCH_OUT): $(PCH_SRC)
 	$(CXX) $(CXXFLAGS) -x c++-header $(PCH_SRC) -o $(PCH_OUT)
 
-# Build the main executable
-main: main.cc $(PCH_OUT)
-	$(CXX) $(CXXFLAGS) -include-pch $(PCH_OUT) main.cc -o $@ $(LDFLAGS)
+# Link the main executable
+main: main.o message.o
+	$(CXX) $(CXXFLAGS) main.o message.o -o $@ $(LDFLAGS)
+
+# Build each .cc file
+%.o : %.cc $(PCH_OUT)
+	$(CXX) $(CXXFLAGS) -include-pch $(PCH_OUT) -c $< -o $@
 
 clean:
 	rm -f main $(PCH_OUT)

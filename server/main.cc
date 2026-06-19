@@ -1,4 +1,7 @@
 #include "crow_all.h"
+#include "message.h"
+#include "state.h"
+
 #include <asio/steady_timer.hpp>
 #include <chrono>
 #include <cpr/cpr.h>
@@ -12,19 +15,13 @@
 #include <unordered_set>
 #include <vector>
 
-struct Video {
-    std::string id;
-    std::string title;
-    std::chrono::seconds duration;
-};
-
 struct State {
     State(asio::io_context &timer_ioc);
 
     std::mutex mutex;
-    Video current_video;
+    dj::Video current_video;
     std::chrono::milliseconds start_time;
-    std::deque<Video> queue;
+    std::deque<dj::Video> queue;
     std::unordered_set<crow::websocket::connection *> clients;
     asio::steady_timer timer;
 };
@@ -43,22 +40,14 @@ std::chrono::milliseconds GetCurrentTime() {
 }
 
 void UpdateQueue(State &state) {
-    std::vector<crow::json::wvalue> queue;
-    for (const auto &video : state.queue) {
-        queue.push_back({{"title", video.title}, {"id", video.id}});
-    }
-    crow::json::wvalue res{{"message", "queue"}, {"payload", queue}};
-    Broadcast(state, res.dump());
+    auto msg = dj::Queue(state.queue);
+    Broadcast(state, msg.Serialize());
 }
 
 void SynchronizeVideo(State &state, crow::websocket::connection &conn) {
     auto elapsed_time = GetCurrentTime() - state.start_time;
-    crow::json::wvalue res = {{"message", "sync"},
-                              {"payload",
-                               {{"videoId", state.current_video.id},
-                                {"title", state.current_video.title},
-                                {"elapsedTime", elapsed_time.count()}}}};
-    conn.send_text(res.dump());
+    auto msg = dj::Sync(state.current_video, elapsed_time);
+    conn.send_text(msg.Serialize());
 }
 
 void NextVideo(State &state) {
@@ -81,12 +70,8 @@ void NextVideo(State &state) {
     });
 
     // Synchronize all clients
-    crow::json::wvalue res = {{"message", "sync"},
-                              {"payload",
-                               {{"videoId", state.current_video.id},
-                                {"title", state.current_video.title},
-                                {"elapsedTime", 0}}}};
-    Broadcast(state, res.dump());
+    auto msg = dj::Sync(state.current_video);
+    Broadcast(state, msg.Serialize());
     UpdateQueue(state);
 }
 
@@ -137,8 +122,8 @@ std::chrono::seconds ParseISO8601(const std::string &s) {
     return result;
 }
 
-std::optional<Video> GetVideoInfo(const std::string &yt_api_key,
-                                  const std::string &video_id) {
+std::optional<dj::Video> GetVideoInfo(const std::string &yt_api_key,
+                                      const std::string &video_id) {
     cpr::Response r =
         cpr::Get(cpr::Url{"https://www.googleapis.com/youtube/v3/videos"},
                  cpr::Parameters{{"part", "snippet,contentDetails"},
@@ -154,7 +139,7 @@ std::optional<Video> GetVideoInfo(const std::string &yt_api_key,
     auto duration =
         ParseISO8601(yt_data["items"][0]["contentDetails"]["duration"].s());
 
-    Video video{video_id, title, duration};
+    dj::Video video{video_id, title, duration};
     return video;
 }
 
@@ -230,7 +215,7 @@ int main(int argc, char *argv[]) {
                     return;
                 }
 
-                Video video = info.value();
+                dj::Video video = info.value();
 
                 // if (!state.currentVideoId) {
                 //     playVideo(video_item);
@@ -265,7 +250,7 @@ int main(int argc, char *argv[]) {
             if (req["message"] == "reorder_queue") {
                 CROW_LOG_INFO << "Reordering queue";
                 std::lock_guard _(state.mutex);
-                std::deque<Video> new_queue;
+                std::deque<dj::Video> new_queue;
                 for (const auto &idx : payload) {
                     new_queue.emplace_back(state.queue[idx.i()]);
                 }
