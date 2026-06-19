@@ -84,10 +84,10 @@ function initSortable() {
 		ghostClass: "sortable-ghost",
 		onEnd: function () {
 			const items = el.querySelectorAll("li");
-			const newQueue = Array.from(items).map(
-				(li) => localQueue[li.dataset.index],
+			const newQueue = Array.from(items).map((li) =>
+				parseInt(li.dataset.index),
 			);
-			socket.emit("reorder", newQueue);
+			ws.send(JSON.stringify({ message: "reorder_queue", payload: newQueue }));
 		},
 	});
 }

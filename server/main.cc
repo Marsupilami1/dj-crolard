@@ -6,7 +6,6 @@
 #include <cstring>
 #include <deque>
 #include <mutex>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -255,6 +254,17 @@ int main(int argc, char *argv[]) {
             }
             if (req["message"] == "next") {
                 NextVideo(state);
+                return;
+            }
+            if (req["message"] == "reorder_queue") {
+                CROW_LOG_INFO << "Reordering queue";
+                std::lock_guard _(state.mutex);
+                std::deque<Video> new_queue;
+                for (const auto &idx : payload) {
+                    new_queue.emplace_back(state.queue[idx.i()]);
+                }
+                state.queue = std::move(new_queue);
+                UpdateQueue(state);
             }
         });
 

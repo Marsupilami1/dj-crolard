@@ -51,6 +51,7 @@ ul {
 }
 
 #playlist-view li:hover {
+	cursor: grab;
 }
 
 .index {
