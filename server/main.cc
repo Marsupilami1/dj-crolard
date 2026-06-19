@@ -38,6 +38,11 @@ void Broadcast(State &state, const std::string &message) {
     }
 }
 
+std::chrono::milliseconds GetCurrentTime() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch());
+}
+
 void UpdateQueue(State &state) {
     std::vector<crow::json::wvalue> queue;
     for (const auto &video : state.queue) {
@@ -48,11 +53,12 @@ void UpdateQueue(State &state) {
 }
 
 void SynchronizeVideo(State &state, crow::websocket::connection &conn) {
-    crow::json::wvalue res{{"message", "sync"},
-                           {"payload",
-                            {{"videoId", state.current_video.id},
-                             {"title", state.current_video.title},
-                             {"startTime", state.start_time.count()}}}};
+    auto elapsed_time = GetCurrentTime() - state.start_time;
+    crow::json::wvalue res = {{"message", "sync"},
+                              {"payload",
+                               {{"videoId", state.current_video.id},
+                                {"title", state.current_video.title},
+                                {"elapsedTime", elapsed_time.count()}}}};
     conn.send_text(res.dump());
 }
 
@@ -62,9 +68,7 @@ void NextVideo(State &state) {
     CROW_LOG_INFO << "Next video";
     std::lock_guard _(state.mutex);
 
-    state.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch());
-
+    state.start_time = GetCurrentTime();
     if (!state.queue.empty()) {
         state.current_video = state.queue[0];
         state.queue.pop_front();
@@ -78,31 +82,33 @@ void NextVideo(State &state) {
     });
 
     // Synchronize all clients
-    crow::json::wvalue res{{"message", "sync"},
-                           {"payload",
-                            {{"videoId", state.current_video.id},
-                             {"title", state.current_video.title},
-                             {"startTime", state.start_time.count()}}}};
+    crow::json::wvalue res = {{"message", "sync"},
+                              {"payload",
+                               {{"videoId", state.current_video.id},
+                                {"title", state.current_video.title},
+                                {"elapsedTime", 0}}}};
     Broadcast(state, res.dump());
     UpdateQueue(state);
 }
 
 std::string LoadApiKey() {
-    const char* env_key = std::getenv("YT_API_KEY");
+    const char *env_key = std::getenv("YT_API_KEY");
     if (env_key != nullptr && std::strlen(env_key) > 0) {
         return std::string(env_key);
     }
-    
-    const char* env_path = std::getenv("YT_API_KEY_FILE");
-    std::string key_file = env_path != nullptr ? std::string(env_path) : "api-key.txt";
-    
+
+    const char *env_path = std::getenv("YT_API_KEY_FILE");
+    std::string key_file =
+        env_path != nullptr ? std::string(env_path) : "api-key.txt";
+
     std::ifstream file(key_file);
     if (!file.is_open()) {
         CROW_LOG_ERROR << "Failed to open API key file: " << key_file;
-        CROW_LOG_ERROR << "Set YT_API_KEY environment variable or YT_API_KEY_FILE to specify a file path";
+        CROW_LOG_ERROR << "Set YT_API_KEY environment variable or "
+                          "YT_API_KEY_FILE to specify a file path";
         return "";
     }
-    
+
     std::string key;
     std::getline(file, key);
     return key;
@@ -214,6 +220,8 @@ int main(int argc, char *argv[]) {
 
                 auto info = GetVideoInfo(yt_api_key, video_id);
                 if (!info.has_value()) {
+                    CROW_LOG_INFO << "Failed to get video info for "
+                                  << video_id;
                     return;
                 }
 

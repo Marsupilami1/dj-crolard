@@ -48,8 +48,7 @@ ws.onmessage = (event) => {
 	if (data.message == "sync") {
 		console.log("Synchronizing");
 		currentVideoId = payload.videoId;
-		currentVideoStartTime = payload.startTime;
-		console.log(currentVideoId, currentVideoStartTime, Date.now());
+		currentVideoStartTime = Date.now() + payload.elapsedTime;
 		forceSync();
 		return;
 	}
