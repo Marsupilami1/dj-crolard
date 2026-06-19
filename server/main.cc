@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
             crow::json::rvalue payload = req["payload"];
 
             // Message dispatch
-            if (req["message"] == "add_video") {
+            if (req["message"] == "add") {
                 const std::string video_id = payload.s();
                 CROW_LOG_INFO << "Adding video: " << video_id;
 

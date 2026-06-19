@@ -35,7 +35,7 @@ function sendUrl() {
 	const input = document.getElementById("url-input");
 	const id = extractId(input.value);
 	if (id) {
-		req = { message: "add_video", payload: id };
+		req = { message: "add", payload: id };
 		ws.send(JSON.stringify(req));
 	}
 }
