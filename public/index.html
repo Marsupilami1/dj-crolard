@@ -37,15 +37,15 @@
 						</button>
 					</div>
 
-					<div class="flex gap-2 w-full">
+					<div class="relative flex gap-2 w-full" id="search-wrap">
 						<input
 							type="text"
-							id="url-input"
+							id="search-bar"
 							placeholder="Add your song here ! (youtube link)"
 							class="bg-mist-900"
 						/>
 						<button
-							onclick="sendUrl()"
+							onclick="search()"
 							class="p-2 text-white bg-red-700 hover:bg-green-700 ease-in-out duration-600 rounded-sm hover:cursor-pointer text-xl group"
 						>
 							<div
@@ -54,6 +54,15 @@
 								<i class="bi bi-plus text-4xl"></i>
 							</div>
 						</button>
+
+						<div class="dropdown" id="dropdown">
+							<div class="min-h-0">
+								<div
+									class="flex flex-col p-2 justify-between bg-mist-900 border-2 border-zinc-200 rounded-lg"
+									id="search-results"
+								></div>
+							</div>
+						</div>
 					</div>
 
 					<div id="player-wrapper" class="border-zinc-500 border-2">

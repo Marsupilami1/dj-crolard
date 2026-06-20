@@ -11,4 +11,10 @@ struct Video {
     std::chrono::seconds duration;
 };
 
+struct SearchResult {
+    std::string id;
+    std::string title;
+    std::string thumbnail;
+};
+
 } // namespace dj
