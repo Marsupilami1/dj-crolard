@@ -1,6 +1,7 @@
 #include "crow_all.h"
 #include "message.h"
 #include "state.h"
+#include "ytapi.h"
 
 #include <asio/steady_timer.hpp>
 #include <chrono>
@@ -9,11 +10,9 @@
 #include <cstring>
 #include <deque>
 #include <mutex>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_set>
-#include <vector>
 
 struct State {
     State(asio::io_context &timer_ioc);
@@ -98,51 +97,6 @@ std::string LoadApiKey() {
     return key;
 }
 
-std::chrono::seconds ParseISO8601(const std::string &s) {
-    std::chrono::seconds result(0);
-    std::istringstream is(s);
-    uint64_t n = 0;
-
-    is.get(); // P
-    is.get(); // T
-    while (is >> n) {
-        switch (is.get()) {
-        case 'H':
-            result += std::chrono::hours(n);
-            break;
-        case 'M':
-            result += std::chrono::minutes(n);
-            break;
-        case 'S':
-            result += std::chrono::seconds(n);
-            break;
-        }
-    }
-
-    return result;
-}
-
-std::optional<dj::Video> GetVideoInfo(const std::string &yt_api_key,
-                                      const std::string &video_id) {
-    cpr::Response r =
-        cpr::Get(cpr::Url{"https://www.googleapis.com/youtube/v3/videos"},
-                 cpr::Parameters{{"part", "snippet,contentDetails"},
-                                 {"id", video_id},
-                                 {"key", yt_api_key}});
-
-    if (r.status_code != 200) {
-        return {};
-    }
-
-    crow::json::rvalue yt_data = crow::json::load(r.text);
-    std::string title = yt_data["items"][0]["snippet"]["title"].s();
-    auto duration =
-        ParseISO8601(yt_data["items"][0]["contentDetails"]["duration"].s());
-
-    dj::Video video{video_id, title, duration};
-    return video;
-}
-
 int main(int argc, char *argv[]) {
     asio::io_context ioc;
     auto work = asio::make_work_guard(ioc);
@@ -152,6 +106,7 @@ int main(int argc, char *argv[]) {
     if (yt_api_key.empty()) {
         return 1;
     }
+    dj::YtApi yt(yt_api_key);
 
     crow::SimpleApp app;
 
@@ -211,7 +166,7 @@ int main(int argc, char *argv[]) {
                 const std::string video_id = payload.s();
                 CROW_LOG_INFO << "Adding video: " << video_id;
 
-                auto info = GetVideoInfo(yt_api_key, video_id);
+                auto info = yt.Video(video_id);
                 if (!info.has_value()) {
                     CROW_LOG_INFO << "Failed to get video info for "
                                   << video_id;
@@ -228,6 +183,17 @@ int main(int argc, char *argv[]) {
                 UpdateQueue(state);
                 // }
                 return;
+            }
+            if (req["message"] == "search") {
+                CROW_LOG_INFO << "Search: " << payload.s();
+                auto results = yt.Search(payload.s());
+                if (!results.has_value()) {
+                    CROW_LOG_INFO << "Failed to perform yt search";
+                    auto msg = dj::SearchResponse(); // empty response
+                    conn.send_text(msg.Serialize());
+                }
+                auto msg = dj::SearchResponse(results.value());
+                conn.send_text(msg.Serialize());
             }
             if (req["message"] == "delete") {
                 const std::size_t index = payload.i();

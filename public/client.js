@@ -4,15 +4,60 @@ let currentVideoId = null;
 let currentVideoStartTime = null;
 let sortableInstance = null;
 let localQueue = [];
+
+// DOM elements
 let input = null;
+let dropdown = null;
+let search_results = null;
 
 window.onload = function () {
 	input = document.getElementById("search-bar");
-
 	input.addEventListener("keydown", (e) => {
-		if (e.key === "Enter") sendUrl();
+		if (e.key === "Enter") search();
 	});
+
+	dropdown = document.getElementById("dropdown");
+	// close dropdown if a click occurs somewhere else on the page
+	document.addEventListener("click", (e) => {
+		if (!e.target.closest("#search-wrap")) closeDropdown();
+	});
+
+	search_results = document.getElementById("search-results");
 };
+
+function openDropdown() {
+	search_results.innerHTML = `<div class="flex justify-center gap-2">
+			<svg
+				class="mr-3 -ml-1 size-5 animate-spin text-white"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+			>
+				<circle
+					class="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					stroke-width="4"
+				></circle>
+				<path
+					class="opacity-75"
+					fill="currentColor"
+					d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+				></path>
+			</svg>
+		</div>`;
+	dropdown.classList.add("open");
+}
+
+function closeDropdown() {
+	dropdown.classList.remove("open");
+}
+
+function isDropdownOpen() {
+	return dropdown.classList.contains("open");
+}
 
 // Initialisation API YouTube
 function onYouTubeIframeAPIReady() {
@@ -36,11 +81,18 @@ function extractId(url) {
 	return match ? match[1] : null;
 }
 
-function sendUrl() {
+function sendId(id) {
+	req = { message: "add", payload: id };
+	ws.send(JSON.stringify(req));
+}
+
+function search() {
 	const id = extractId(input.value);
-	if (id) {
-		req = { message: "add", payload: id };
+	if (id) sendId(id);
+	else {
+		req = { message: "search", payload: input.value };
 		ws.send(JSON.stringify(req));
+		openDropdown();
 	}
 }
 
@@ -75,6 +127,30 @@ ws.onmessage = (event) => {
 				)
 				.join("");
 			initSortable();
+		}
+	}
+	if (data.message == "search-response") {
+		console.log(data.payload);
+		if (payload.length == 0) {
+			search_results.innerHTML = "<div> No result found :/</div>";
+		} else {
+			search_results.innerHTML = payload
+				.map(
+					(item, i) =>
+						` <div class="flex gap-6 items-center p-2 hover:bg-mist-800 hover:cursor-pointer group"
+										onclick="sendId('${item.id}')">
+							<img
+								src="${item.thumbnail}"
+								class="h-[90px] rounded-md border-zinc-200 border-1"
+							/>
+							<div class="flex flex-1 text-zinc-100">
+								${item.title}
+							</div>
+							<i
+								class="hidden group-hover:inline bi bi-plus text-4xl"
+							></i></div> `,
+				)
+				.join('<div class="flex border-b-1 border-zinc-500 my-2"></div>');
 		}
 	}
 };

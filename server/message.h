@@ -50,4 +50,19 @@ class Queue : public OutMessage {
     std::vector<Video> payload_;
 };
 
+class SearchResponse : public OutMessage {
+  public:
+    SearchResponse();
+    template <std::ranges::input_range R>
+    explicit SearchResponse(R &&range)
+        : payload_(std::begin(range), std::end(range)) {}
+    virtual ~SearchResponse() = default;
+
+    std::string Message() override;
+    crow::json::wvalue Payload() override;
+
+  private:
+    std::vector<SearchResult> payload_;
+};
+
 } // namespace dj

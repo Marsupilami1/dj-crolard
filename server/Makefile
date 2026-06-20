@@ -14,8 +14,8 @@ $(PCH_OUT): $(PCH_SRC)
 	$(CXX) $(CXXFLAGS) -x c++-header $(PCH_SRC) -o $(PCH_OUT)
 
 # Link the main executable
-main: main.o message.o
-	$(CXX) $(CXXFLAGS) main.o message.o -o $@ $(LDFLAGS)
+main: main.o message.o ytapi.o
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 # Build each .cc file
 %.o : %.cc $(PCH_OUT)

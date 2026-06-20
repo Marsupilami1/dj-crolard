@@ -33,7 +33,24 @@ crow::json::wvalue Queue::Payload() {
     items.reserve(payload_.size());
     std::transform(payload_.begin(), payload_.end(), std::back_inserter(items),
                    [](const auto &video) -> crow::json::wvalue {
-                       return {{"title", video.title}, {"id", video.id}};
+                       return {{"id", video.id}, {"title", video.title}};
+                   });
+    return items;
+}
+
+// Response to a Search query
+SearchResponse::SearchResponse() : payload_() {}
+
+std::string SearchResponse::Message() { return "search-response"; }
+
+crow::json::wvalue SearchResponse::Payload() {
+    std::vector<crow::json::wvalue> items;
+    items.reserve(payload_.size());
+    std::transform(payload_.begin(), payload_.end(), std::back_inserter(items),
+                   [](const auto &item) -> crow::json::wvalue {
+                       return {{"id", item.id},
+                               {"title", item.title},
+                               {"thumbnail", item.thumbnail}};
                    });
     return items;
 }

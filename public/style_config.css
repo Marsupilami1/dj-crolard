@@ -77,3 +77,23 @@ ul {
 .sortable-ghost {
 	opacity: 0.2;
 }
+
+.dropdown {
+	position: absolute;
+	display: grid;
+	grid-template-rows: 0fr;
+	top: 65px;
+	width: 962px;
+	overflow: hidden;
+	transition: grid-template-rows 0.28s ease;
+}
+
+.dropdown.open {
+	grid-template-rows: 1fr;
+}
+
+/* Needed so the dropdown can shrink entirely */
+.dropdown-inner {
+	min-height: 0;
+	overflow: hidden;
+}
