@@ -25,6 +25,13 @@ crow::json::wvalue Sync::Payload() {
     return payload;
 }
 
+// Viewers count
+Viewers::Viewers(const int &viewers) : payload_(viewers) {}
+
+std::string Viewers::Message() { return "viewers"; }
+
+crow::json::wvalue Viewers::Payload() { return payload_; }
+
 // Update queue
 std::string Queue::Message() { return "queue"; }
 

@@ -38,6 +38,11 @@ std::chrono::milliseconds GetCurrentTime() {
         std::chrono::system_clock::now().time_since_epoch());
 }
 
+void UpdateViewers(State &state) {
+    auto msg = dj::Viewers(state.clients.size());
+    Broadcast(state, msg.Serialize());
+}
+
 void UpdateQueue(State &state) {
     auto msg = dj::Queue(state.queue);
     Broadcast(state, msg.Serialize());
@@ -146,12 +151,15 @@ int main(int argc, char *argv[]) {
 
             std::lock_guard _(state.mutex);
             state.clients.insert(&conn);
+
+            UpdateViewers(state);
         })
         .onclose([&](crow::websocket::connection &conn,
                      const std::string &reason, uint16_t with_status_code) {
             CROW_LOG_INFO << "Websocket close (" << conn.get_remote_ip() << ")";
             std::lock_guard _(state.mutex);
             state.clients.erase(&conn);
+            UpdateViewers(state);
         })
         .onmessage([&](crow::websocket::connection &conn,
                        const std::string &message, bool is_binary) {

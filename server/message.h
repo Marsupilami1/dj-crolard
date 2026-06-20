@@ -36,6 +36,18 @@ class Sync : public OutMessage {
     std::chrono::milliseconds elapsed_time_;
 };
 
+class Viewers : public OutMessage {
+  public:
+    Viewers(const int &viewers);
+    virtual ~Viewers() = default;
+
+    std::string Message() override;
+    crow::json::wvalue Payload() override;
+
+  private:
+    int payload_;
+};
+
 class Queue : public OutMessage {
   public:
     template <std::ranges::input_range R>

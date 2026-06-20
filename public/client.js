@@ -4,11 +4,13 @@ let currentVideoId = null;
 let currentVideoStartTime = null;
 let sortableInstance = null;
 let localQueue = [];
+let viewers_count = null;
 
 // DOM elements
 let input = null;
 let dropdown = null;
 let search_results = null;
+let viewers = null;
 
 window.onload = function () {
 	input = document.getElementById("search-bar");
@@ -23,6 +25,9 @@ window.onload = function () {
 	});
 
 	search_results = document.getElementById("search-results");
+
+	viewers = document.getElementById("viewers");
+	renderViewers();
 };
 
 function openDropdown() {
@@ -57,6 +62,20 @@ function closeDropdown() {
 
 function isDropdownOpen() {
 	return dropdown.classList.contains("open");
+}
+
+function renderViewers() {
+	viewers.innerHTML = `
+			<div class="flex flex-col items-center">
+				<div
+					class="h-15 w-15 rounded-full border-2 border-mist-900 bg-mist-600 shadow-lg shadow-mist-900"
+				></div>
+				<div
+					class="flex h-20 w-25 rounded-t-full border-2 border-b-0 border-mist-900 bg-mist-600 shadow-mist-900 shadow-lg items-center justify-center"
+				>
+					<span class="font-bold"></span>
+				</div>
+			</div>`.repeat(viewers_count);
 }
 
 // Initialisation API YouTube
@@ -107,6 +126,11 @@ ws.onmessage = (event) => {
 		currentVideoStartTime = Date.now() - payload.elapsedTime;
 		forceSync();
 		return;
+	}
+	if (data.message == "viewers") {
+		console.log("Updating viewers");
+		viewers_count = payload;
+		if (viewers) renderViewers();
 	}
 	if (data.message == "queue") {
 		console.log("Updating queue");
