@@ -4,6 +4,15 @@ let currentVideoId = null;
 let currentVideoStartTime = null;
 let sortableInstance = null;
 let localQueue = [];
+let input = null;
+
+window.onload = function () {
+	input = document.getElementById("search-bar");
+
+	input.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") sendUrl();
+	});
+};
 
 // Initialisation API YouTube
 function onYouTubeIframeAPIReady() {
@@ -32,7 +41,6 @@ function extractId(url) {
 }
 
 function sendUrl() {
-	const input = document.getElementById("url-input");
 	const id = extractId(input.value);
 	if (id) {
 		req = { message: "add", payload: id };
