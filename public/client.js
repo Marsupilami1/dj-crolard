@@ -24,10 +24,6 @@ function onYouTubeIframeAPIReady() {
 			onReady: () => {
 				document.getElementById("btn-sync").style.display = "block";
 			},
-			onStateChange: (e) => {
-				if (e.data === YT.PlayerState.PAUSED)
-					console.log("Pause detected. Clic Synchronize to come back to live.");
-			},
 		},
 	});
 }
