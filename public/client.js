@@ -52,7 +52,7 @@ ws.onmessage = (event) => {
 	if (data.message == "sync") {
 		console.log("Synchronizing");
 		currentVideoId = payload.videoId;
-		currentVideoStartTime = Date.now() + payload.elapsedTime;
+		currentVideoStartTime = Date.now() - payload.elapsedTime;
 		forceSync();
 		return;
 	}
@@ -98,10 +98,10 @@ function initSortable() {
 
 function forceSync() {
 	if (player && currentVideoId && currentVideoStartTime) {
-		const elapsed = (Date.now() - currentVideoStartTime) / 1000;
+		const elapsed = Date.now() - currentVideoStartTime;
 		player.loadVideoById({
 			videoId: currentVideoId,
-			startSeconds: elapsed,
+			startSeconds: elapsed / 1000,
 		});
 		player.playVideo();
 	}
