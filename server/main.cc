@@ -20,6 +20,8 @@ struct State {
     std::mutex mutex;
     dj::Video current_video;
     std::chrono::milliseconds start_time;
+    std::chrono::milliseconds elapsed_time;
+    bool playing = true;
     std::deque<dj::Video> queue;
     std::unordered_set<crow::websocket::connection *> clients;
     asio::steady_timer timer;
@@ -213,15 +215,43 @@ int main(int argc, char *argv[]) {
                 }
                 return;
             }
+            if (req["message"] == "next") {
+                NextVideo(state);
+                return;
+            }
+            if (req["message"] == "pause") {
+                CROW_LOG_INFO << "Pause";
+                // "pause" event can also resume the video
+                std::lock_guard _(state.mutex);
+                state.playing = !state.playing;
+                if (state.playing) {
+                    state.start_time = GetCurrentTime() - state.elapsed_time;
+                    state.timer.expires_after(state.current_video.duration -
+                                              state.elapsed_time);
+                    state.timer.async_wait([&](const asio::error_code &ec) {
+                        if (ec)
+                            return;
+                        NextVideo(state);
+                    });
+                    // Resume clients with a "sync" event
+                    auto msg =
+                        dj::Sync(state.current_video, state.elapsed_time);
+                    Broadcast(state, msg.Serialize());
+                } else {
+                    state.elapsed_time = GetCurrentTime() - state.start_time;
+                    // Stop the automatic queue pulling
+                    state.timer.cancel();
+                    // Pause clients with a "pause" evetn
+                    auto msg = dj::Pause();
+                    Broadcast(state, msg.Serialize());
+                }
+                return;
+            }
             if (req["message"] == "clear") {
                 CROW_LOG_INFO << "Clearing queue";
                 std::lock_guard _(state.mutex);
                 state.queue.clear();
                 UpdateQueue(state);
-                return;
-            }
-            if (req["message"] == "next") {
-                NextVideo(state);
                 return;
             }
             if (req["message"] == "reorder_queue") {
@@ -233,7 +263,9 @@ int main(int argc, char *argv[]) {
                 }
                 state.queue = std::move(new_queue);
                 UpdateQueue(state);
+                return;
             }
+            CROW_LOG_WARNING << "Received unknown message: " << req["message"];
         });
 
     std::thread timer_thread([&]() { ioc.run(); });

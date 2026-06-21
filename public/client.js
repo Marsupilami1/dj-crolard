@@ -127,6 +127,10 @@ ws.onmessage = (event) => {
 		forceSync();
 		return;
 	}
+	if (data.message == "pause") {
+		console.log("Pause: ");
+		player.pauseVideo();
+	}
 	if (data.message == "viewers") {
 		console.log("Updating viewers");
 		viewers_count = payload;
@@ -207,13 +211,18 @@ function forceSync() {
 	}
 }
 
+function askClearQueue() {
+	req = { message: "clear", payload: null };
+	ws.send(JSON.stringify(req));
+}
+
 function askNextVideo() {
 	req = { message: "next", payload: null };
 	ws.send(JSON.stringify(req));
 }
 
-function askClearQueue() {
-	req = { message: "clear", payload: null };
+function askPause() {
+	req = { message: "pause", payload: null };
 	ws.send(JSON.stringify(req));
 }
 

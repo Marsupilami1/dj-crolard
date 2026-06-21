@@ -25,6 +25,11 @@ crow::json::wvalue Sync::Payload() {
     return payload;
 }
 
+// Pause
+std::string Pause::Message() { return "pause"; }
+
+crow::json::wvalue Pause::Payload() { return {}; }
+
 // Viewers count
 Viewers::Viewers(const int &viewers) : payload_(viewers) {}
 

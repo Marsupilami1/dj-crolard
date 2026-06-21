@@ -36,6 +36,15 @@ class Sync : public OutMessage {
     std::chrono::milliseconds elapsed_time_;
 };
 
+class Pause : public OutMessage {
+  public:
+    Pause() = default;
+    virtual ~Pause() = default;
+
+    std::string Message() override;
+    crow::json::wvalue Payload() override;
+};
+
 class Viewers : public OutMessage {
   public:
     Viewers(const int &viewers);
