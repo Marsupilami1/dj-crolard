@@ -27,10 +27,15 @@ window.onload = function () {
 	search_results = document.getElementById("search-results");
 
 	viewers = document.getElementById("viewers");
+
+	// Render the page so the client can have the queue and the viewers
+	// information
+	renderQueue();
 	renderViewers();
 };
 
 function openDropdown() {
+	// Some svg animation taken from tailwindcss documentation
 	search_results.innerHTML = `<div class="flex justify-center gap-2">
 			<svg
 				class="mr-3 -ml-1 size-5 animate-spin text-white"
@@ -64,6 +69,26 @@ function isDropdownOpen() {
 	return dropdown.classList.contains("open");
 }
 
+function renderQueue() {
+	const view = document.getElementById("playlist-view");
+	if (localQueue.length == 0) {
+		view.innerHTML = "<li>Queue is empty :/</li>";
+	} else {
+		view.innerHTML = localQueue
+			.map(
+				(item, i) =>
+					`<li data-index="${i}">
+			<div class="item-content">
+			  <span class="index">${i + 1}</span> ${item.title}
+			</div>
+			<button class="delete-btn" onclick="askDelete(${i})"><i class="bi bi-trash text-xl"></i></button>
+		  </li>`,
+			)
+			.join("");
+		initSortable();
+	}
+}
+
 function renderViewers() {
 	viewers.innerHTML = `
 			<div class="flex flex-col items-center">
@@ -86,7 +111,9 @@ function onYouTubeIframeAPIReady() {
 		playerVars: { autoplay: 1, controls: 1 },
 		events: {
 			onReady: () => {
-				document.getElementById("btn-sync").style.display = "block";
+				// browsers often block autoplay if the player is not muted
+				player.mute();
+				forceSync();
 			},
 		},
 	});
@@ -139,23 +166,7 @@ ws.onmessage = (event) => {
 	if (data.message == "queue") {
 		console.log("Updating queue");
 		localQueue = payload;
-		const view = document.getElementById("playlist-view");
-		if (payload.length == 0) {
-			view.innerHTML = "<li>Queue is empty :/</li>";
-		} else {
-			view.innerHTML = payload
-				.map(
-					(item, i) =>
-						`<li data-index="${i}">
-            <div class="item-content">
-              <span class="index">${i + 1}</span> ${item.title}
-            </div>
-            <button class="delete-btn" onclick="askDelete(${i})"><i class="bi bi-trash text-xl"></i></button>
-          </li>`,
-				)
-				.join("");
-			initSortable();
-		}
+		renderQueue();
 	}
 	if (data.message == "search-response") {
 		console.log(data.payload);
@@ -201,12 +212,23 @@ function initSortable() {
 }
 
 function forceSync() {
-	if (player && currentVideoId && currentVideoStartTime) {
+	if (
+		player &&
+		currentVideoId &&
+		currentVideoStartTime &&
+		player.loadVideoById
+	) {
 		const elapsed = Date.now() - currentVideoStartTime;
-		player.loadVideoById({
-			videoId: currentVideoId,
-			startSeconds: elapsed / 1000,
-		});
+		if (player.getVideoData().video_id !== currentVideoId) {
+			console.log("LOADING");
+			player.loadVideoById({
+				videoId: currentVideoId,
+				startSeconds: elapsed / 1000,
+			});
+		} else {
+			console.log("SEEKING");
+			player.seekTo(elapsed / 1000);
+		}
 		player.playVideo();
 	}
 }

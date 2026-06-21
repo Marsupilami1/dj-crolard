@@ -45,9 +45,14 @@ void UpdateViewers(State &state) {
     Broadcast(state, msg.Serialize());
 }
 
-void UpdateQueue(State &state) {
+void SendQueue(State &state) {
     auto msg = dj::Queue(state.queue);
     Broadcast(state, msg.Serialize());
+}
+
+void SendQueue(State &state, crow::websocket::connection &conn) {
+    auto msg = dj::Queue(state.queue);
+    conn.send_text(msg.Serialize());
 }
 
 void SynchronizeVideo(State &state, crow::websocket::connection &conn) {
@@ -78,7 +83,7 @@ void NextVideo(State &state) {
     // Synchronize all clients
     auto msg = dj::Sync(state.current_video);
     Broadcast(state, msg.Serialize());
-    UpdateQueue(state);
+    SendQueue(state);
 }
 
 std::string LoadApiKey() {
@@ -148,13 +153,13 @@ int main(int argc, char *argv[]) {
         .onopen([&](crow::websocket::connection &conn) {
             CROW_LOG_INFO << "Websocket open (" << conn.get_remote_ip() << ")";
 
-            // Synchronize clients when then join the room
-            SynchronizeVideo(state, conn);
-
             std::lock_guard _(state.mutex);
             state.clients.insert(&conn);
 
-            UpdateViewers(state);
+            // When a client join the room:
+            SendQueue(state, conn);        // Send it the queue
+            SynchronizeVideo(state, conn); // Synchronize it
+            UpdateViewers(state);          // Tell everybody than someone joined
         })
         .onclose([&](crow::websocket::connection &conn,
                      const std::string &reason, uint16_t with_status_code) {
@@ -190,7 +195,7 @@ int main(int argc, char *argv[]) {
                 // } else {
                 std::lock_guard _(state.mutex);
                 state.queue.push_back(video);
-                UpdateQueue(state);
+                SendQueue(state);
                 // }
                 return;
             }
@@ -211,7 +216,7 @@ int main(int argc, char *argv[]) {
                 std::lock_guard _(state.mutex);
                 if (index < state.queue.size()) {
                     state.queue.erase(state.queue.begin() + index);
-                    UpdateQueue(state);
+                    SendQueue(state);
                 }
                 return;
             }
@@ -251,7 +256,7 @@ int main(int argc, char *argv[]) {
                 CROW_LOG_INFO << "Clearing queue";
                 std::lock_guard _(state.mutex);
                 state.queue.clear();
-                UpdateQueue(state);
+                SendQueue(state);
                 return;
             }
             if (req["message"] == "reorder_queue") {
@@ -262,7 +267,7 @@ int main(int argc, char *argv[]) {
                     new_queue.emplace_back(state.queue[idx.i()]);
                 }
                 state.queue = std::move(new_queue);
-                UpdateQueue(state);
+                SendQueue(state);
                 return;
             }
             CROW_LOG_WARNING << "Received unknown message: " << req["message"];
