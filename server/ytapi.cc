@@ -54,11 +54,18 @@ std::optional<std::vector<SearchResult>>
 YtApi::Search(const std::string &query) {
     cpr::Response r =
         cpr::Get(cpr::Url{"https://www.googleapis.com/youtube/v3/search"},
-                 cpr::Parameters{{"q", query},
-                                 {"maxResults", "5"},
-                                 {"type", "video"},
-                                 {"part", "snippet"},
-                                 {"key", api_key_}});
+                 cpr::Parameters{
+                     {"q", query},
+                     {"maxResults", "5"},
+                     {"type", "video"},
+                     {"part", "snippet"},
+                     {"safeSearch",
+                      "moderate"}, // Restricted videos require age verification
+                                   // anyway, and safe is kid-friendly which is
+                                   // not the public of this project
+                     {"topicId", "/m/04rlf"}, // Music (Freebase Id)
+                     {"videoEmbeddable", "true"},
+                     {"key", api_key_}});
 
     if (r.status_code != 200) {
         return std::nullopt;

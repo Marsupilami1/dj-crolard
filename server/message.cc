@@ -1,8 +1,8 @@
 #include "message.h"
 
-using namespace dj;
+using namespace dj::msg;
 
-std::string OutMessage::Serialize() {
+std::string OutMessage::Serialize() const {
     crow::json::wvalue res;
     res["message"] = Message();
     res["payload"] = Payload();
@@ -15,9 +15,9 @@ Sync::Sync(const Video &video, const std::chrono::milliseconds &elapsed_time)
 
 Sync::Sync(const Video &video) : payload_(video), elapsed_time_(0) {}
 
-std::string Sync::Message() { return "sync"; }
+std::string Sync::Message() const { return "sync"; }
 
-crow::json::wvalue Sync::Payload() {
+crow::json::wvalue Sync::Payload() const {
     crow::json::wvalue payload;
     payload["videoId"] = payload_.id;
     payload["title"] = payload_.title;
@@ -26,21 +26,21 @@ crow::json::wvalue Sync::Payload() {
 }
 
 // Pause
-std::string Pause::Message() { return "pause"; }
+std::string Pause::Message() const { return "pause"; }
 
-crow::json::wvalue Pause::Payload() { return {}; }
+crow::json::wvalue Pause::Payload() const { return {}; }
 
 // Viewers count
 Viewers::Viewers(const int &viewers) : payload_(viewers) {}
 
-std::string Viewers::Message() { return "viewers"; }
+std::string Viewers::Message() const { return "viewers"; }
 
-crow::json::wvalue Viewers::Payload() { return payload_; }
+crow::json::wvalue Viewers::Payload() const { return payload_; }
 
 // Update queue
-std::string Queue::Message() { return "queue"; }
+std::string Queue::Message() const { return "queue"; }
 
-crow::json::wvalue Queue::Payload() {
+crow::json::wvalue Queue::Payload() const {
     std::vector<crow::json::wvalue> items;
     items.reserve(payload_.size());
     std::transform(payload_.begin(), payload_.end(), std::back_inserter(items),
@@ -53,9 +53,9 @@ crow::json::wvalue Queue::Payload() {
 // Response to a Search query
 SearchResponse::SearchResponse() : payload_() {}
 
-std::string SearchResponse::Message() { return "search-response"; }
+std::string SearchResponse::Message() const { return "search-response"; }
 
-crow::json::wvalue SearchResponse::Payload() {
+crow::json::wvalue SearchResponse::Payload() const {
     std::vector<crow::json::wvalue> items;
     items.reserve(payload_.size());
     std::transform(payload_.begin(), payload_.end(), std::back_inserter(items),
