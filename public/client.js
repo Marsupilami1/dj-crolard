@@ -198,7 +198,7 @@ function initSortable() {
 	const el = document.getElementById("playlist-view");
 	if (sortableInstance) sortableInstance.destroy();
 
-	sortableInstacne = new Sortable(el, {
+	sortableInstance = new Sortable(el, {
 		animation: 150,
 		ghostClass: "sortable-ghost",
 		onEnd: function () {
