@@ -81,6 +81,7 @@ function renderQueue() {
 			<div class="item-content">
 			  <span class="index">${i + 1}</span> ${item.title}
 			</div>
+			<button class="search-btn" onclick="window.open('https://youtube.com/watch/?v=${item.id}', '_blank')"><i class="bi bi-youtube text-xl"></i></button>
 			<button class="delete-btn" onclick="askDelete(${i})"><i class="bi bi-trash text-xl"></i></button>
 		  </li>`,
 			)

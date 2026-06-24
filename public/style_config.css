@@ -59,6 +59,20 @@ ul {
 	padding: 4px;
 }
 
+.search-btn {
+	display: none;
+	color: var(--color-zinc-100);
+	border: none;
+	border-radius: calc(infinity * 1px);
+	aspect-ratio: 1;
+	cursor: pointer;
+	margin-bottom: 5px;
+}
+
+#playlist-view li:hover .search-btn {
+	display: flex;
+}
+
 .delete-btn {
 	display: none;
 	color: #ff4444;
