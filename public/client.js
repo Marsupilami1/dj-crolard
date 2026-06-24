@@ -11,6 +11,7 @@ let input = null;
 let dropdown = null;
 let search_results = null;
 let viewers = null;
+let playButton = null;
 
 window.onload = function () {
 	input = document.getElementById("search-bar");
@@ -27,6 +28,8 @@ window.onload = function () {
 	search_results = document.getElementById("search-results");
 
 	viewers = document.getElementById("viewers");
+
+	playButton = document.getElementById("play-button");
 
 	// Render the page so the client can have the queue and the viewers
 	// information
@@ -152,11 +155,13 @@ ws.onmessage = (event) => {
 		console.log("Synchronizing");
 		currentVideoId = payload.videoId;
 		currentVideoStartTime = Date.now() - payload.elapsedTime;
+		playButton.innerHTML = `<i class="bi bi-pause text-2xl"></i>`;
 		forceSync();
 		return;
 	}
 	if (data.message == "pause") {
 		console.log("Pause: ");
+		playButton.innerHTML = `<i class="bi bi-play-fill text-2xl"></i>`;
 		player.pauseVideo();
 	}
 	if (data.message == "viewers") {

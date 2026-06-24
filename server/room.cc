@@ -31,9 +31,10 @@ void Room::RemoveClient(crow::websocket::connection *conn) {
 
 void Room::Greet(crow::websocket::connection &conn) {
     // When a client join the room:
-    SendQueue(conn); // Send it the queue
-    SendSync(conn);  // Synchronize it
-    SendViewers();   // Tell everybody than someone joined
+    if (playing_)
+        SendSync(conn); // Synchronize it
+    SendQueue(conn);    // Send it the queue
+    SendViewers();      // Tell everybody than someone joined
 
     // TODO: a dedicated greet message would be better
     // Currently if a client joins a paused room, it will see the video playing
@@ -85,7 +86,6 @@ void Room::Next(const asio::error_code &ec) {
 void Room::Pause() {
     playing_ = !playing_;
     if (playing_) {
-        // TODO: LoadVideo() ?
         start_time_ = GetCurrentTime() - elapsed_time_;
         timer_.expires_after(current_video_.duration - elapsed_time_);
         timer_.async_wait([this](const asio::error_code &ec) { Next(ec); });
