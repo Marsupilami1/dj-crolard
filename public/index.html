@@ -27,7 +27,10 @@
 
 						<button
 							id="btn-sync"
-							onclick="forceSync()"
+							onclick="
+								player.unMute();
+								forceSync();
+							"
 							class="w-sm h-full p-2 text-white bg-green-700 ease-in-out duration-600 rounded-sm text-2xl hover:cursor-pointer group"
 						>
 							Join Jukebox
