@@ -42,15 +42,28 @@ ul {
 }
 
 .item-content {
+	display: flex;
+	align-items: center;
+	gap: 4px;
 	flex-grow: 1;
 	text-align: left;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+
+	.li-title {
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+	}
 }
 
 #playlist-view li:hover {
 	cursor: grab;
+	overflow: hidden;
+}
+
+#playlist-view li:hover .li-title {
+	text-overflow: "";
+	overflow: visible;
 }
 
 .index {

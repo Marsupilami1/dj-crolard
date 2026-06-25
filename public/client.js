@@ -82,7 +82,7 @@ function renderQueue() {
 				(item, i) =>
 					`<li data-index="${i}">
 			<div class="item-content">
-			  <span class="index">${i + 1}</span> ${item.title}
+			  <span class="index">${i + 1}</span><div class="overflow-hidden"><div class="li-title">${item.title}</div></div>
 			</div>
 			<button class="search-btn" onclick="window.open('https://youtube.com/watch/?v=${item.id}', '_blank')"><i class="bi bi-youtube text-xl"></i></button>
 			<button class="delete-btn" onclick="askDelete(${i})"><i class="bi bi-trash text-xl"></i></button>
@@ -90,7 +90,32 @@ function renderQueue() {
 			)
 			.join("");
 		initSortable();
+		setupMarquee();
 	}
+}
+
+function setupMarquee() {
+	document.querySelectorAll("#playlist-view li").forEach((li) => {
+		const title = li.querySelector(".li-title");
+		const container = title.parentElement;
+
+		li.addEventListener("mouseenter", () => {
+			const overflow = title.scrollWidth - container.clientWidth;
+
+			if (overflow <= 0) return;
+
+			// constant speed : 60px/s
+			const duration = overflow / 60;
+
+			title.style.transition = `transform ${duration}s linear`;
+			title.style.transform = `translateX(-${overflow}px)`;
+		});
+
+		li.addEventListener("mouseleave", () => {
+			title.style.transition = "transform .2s ease-out";
+			title.style.transform = "translateX(0)";
+		});
+	});
 }
 
 function renderViewers() {
