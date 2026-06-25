@@ -56,7 +56,7 @@ YtApi::Search(const std::string &query) {
         cpr::Get(cpr::Url{"https://www.googleapis.com/youtube/v3/search"},
                  cpr::Parameters{
                      {"q", query},
-                     {"maxResults", "5"},
+                     {"maxResults", "50"},
                      {"type", "video"},
                      {"part", "snippet"},
                      {"safeSearch",
