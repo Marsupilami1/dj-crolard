@@ -89,6 +89,9 @@ YtApi::Search(const std::string &query) {
     //  }
 
     for (const auto &item : yt_data["items"].lo()) {
+        // The youtube API can return channels when asked for videos
+        if (!item["id"].has("videoId"))
+            continue;
         results.emplace_back(
             item["id"]["videoId"].s(), item["snippet"]["title"].s(),
             item["snippet"]["thumbnails"]["default"]["url"].s());
