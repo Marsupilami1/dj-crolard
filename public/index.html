@@ -14,12 +14,12 @@
 		/>
 	</head>
 	<body
-		class="bg-mist-800 text-zinc-200 font-display w-full flex flex-col items-center mt-20"
+		class="bg-mist-800 text-zinc-200 font-display w-full flex flex-col items-center mt-15 lg:mt-20"
 	>
-		<div class="flex gap-6">
-			<div class="flex flex-col w-5xl gap-2">
+		<div class="flex flex-col lg:flex-row gap-6">
+			<div class="flex flex-col w-full lg:w-5xl gap-2">
 				<div class="flex flex-col gap-4 items-center">
-					<div class="flex w-full justify-between items-center">
+					<div class="flex w-full justify-between items-center gap-6">
 						<div>
 							<h2 class="text-6xl font-bold">DJ Crolard</h2>
 							<h3 class="text-3xl">A Collaborative Jukebox Experience</h3>
@@ -31,9 +31,9 @@
 								player.unMute();
 								forceSync();
 							"
-							class="w-sm h-full p-2 text-white bg-green-700 ease-in-out duration-600 rounded-sm text-2xl hover:cursor-pointer group"
+							class="lg:w-sm h-full p-4 lg:p-2 text-white bg-green-700 ease-in-out duration-600 rounded-sm text-2xl hover:cursor-pointer group"
 						>
-							Join Jukebox
+							<span>Join Jukebox</span>
 							<div class="group-hover:animate-spin ease-in-out duration-600">
 								<i class="bi bi-arrow-clockwise text-4xl"></i>
 							</div>
@@ -75,10 +75,10 @@
 			</div>
 
 			<div
-				class="flex flex-col w-lg items-center bg-mist-900 rounded-sm border-zinc-500 border-2 h-[760px] overflow-y-scroll"
+				class="relative flex flex-col lg:w-lg items-center bg-mist-900 rounded-sm border-zinc-500 border-2 h-100 lg:h-[760px] overflow-y-scroll"
 			>
-				<div class="flex flex-col sticky top-0 bg-mist-900 p-4 w-full">
-					<div class="flex justify-between">
+				<div class="absolute flex flex-col sticky top-0 bg-mist-900 p-4 w-full">
+					<div class="flex justify-between bg-mist-900">
 						<button
 							onclick="askClearQueue()"
 							class="p-2 w-[120px] text-white bg-red-900 hover:bg-red-700 ease-in-out duration-600 rounded-sm hover:cursor-pointer text-xl group"
@@ -109,7 +109,7 @@
 	</body>
 
 	<div
-		class="absolute bottom-0 inset-x-0 flex justify-center gap-10"
+		class="absolute flex right-0 inset-y-0 flex-col lg:bottom-0 lg:inset-x-0 lg:flex-row justify-center gap-10 lg:self-end"
 		id="viewers"
 	></div>
 </html>

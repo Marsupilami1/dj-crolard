@@ -120,12 +120,12 @@ function setupMarquee() {
 
 function renderViewers() {
 	viewers.innerHTML = `
-			<div class="flex flex-col items-center">
+			<div class="flex flex-row lg:flex-col items-center">
 				<div
-					class="h-15 w-15 rounded-full border-2 border-mist-900 bg-mist-600 shadow-lg shadow-mist-900"
+					class="h-12 w-12 lg:h-15 lg:w-15 rounded-full border-2 border-mist-900 bg-mist-600 shadow-lg shadow-mist-900"
 				></div>
 				<div
-					class="flex h-20 w-25 rounded-t-full border-2 border-b-0 border-mist-900 bg-mist-600 shadow-mist-900 shadow-lg items-center justify-center"
+					class="flex w-16 h-20 lg:h-20 lg:w-25 rounded-l-full lg:rounded-bl-none lg:rounded-t-full border-2 border-b-0 border-mist-900 bg-mist-600 shadow-mist-900 shadow-lg items-center justify-center"
 				>
 					<span class="font-bold"></span>
 				</div>
