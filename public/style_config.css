@@ -109,7 +109,6 @@ ul {
 	display: grid;
 	grid-template-rows: 0fr;
 	top: 65px;
-	width: 962px;
 	overflow: hidden;
 	transition: grid-template-rows 0.28s ease;
 }
